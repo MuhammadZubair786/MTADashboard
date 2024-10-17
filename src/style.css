@@ -1,0 +1,38 @@
+.pagination button:nth-child(1n + 10) {
+  display: none;
+}
+.pagination button:last-child,
+.pagination button:nth-last-child(2) {
+  display: block;
+}
+.pagination button:nth-child(9) {
+  margin-right: 30px;
+  position: relative;
+}
+
+.pagination button:nth-child(9):after {
+  content: '...';
+  position: absolute;
+  right: -30px;
+  top: -2px;
+  font-size: 24px;
+}
+.pagination button {
+  border: none;
+  margin-left: 10px;
+  border-radius: 6px;
+  padding: 10px 20px;
+}
+button.active {
+    background-color: #009245 !important;
+    color: #f5f5f5;
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+.menupagination {
+  display: flex;
+}
+.pagination {
+  display: flex;
+  margin-left: 5px;
+}
