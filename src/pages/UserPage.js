@@ -24,33 +24,39 @@ import {
   Box,
   Switch,
   Skeleton,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from '@mui/material';
 // components
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { collection, doc, getDocs, setDoc } from 'firebase/firestore';
+import { Icon } from '@iconify/react';
+import closeIcon from '@iconify/icons-mdi/close'; // or another close icon
+// import Modal from 'react-modal';
+// import Icon from '../components/color-utils/Icon';
+import { auth, db } from '../service/firebase';
 import TableLoading from '../components/table-loading/tableLoading';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
-// import USERLIST from '../_mock/user';
-import { deleteSelectedUser, getUsers } from '../service/user.service';
-
 import { imgURL } from '../service/config';
 
-// ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'profile.image.file', label: 'Image', alignRight: false },
-  { id: 'profile.fullName', label: 'Name', alignRight: false },
-  { id: 'isCompleteProfile', label: 'Role', alignRight: false },
-  { id: 'userType', label: 'Profile Complete', alignRight: false },
-  { id: 'status', label: 'Posts', alignRight: false },
+  { id: 'name', label: 'Name', alignRight: false },
+  { id: 'email', label: 'Email', alignRight: false },
+  { id: 'challengeName', label: 'Challange', alignRight: false },
+  { id: 'tradingAccountNumber', label: 'Trading Account Number', alignRight: false },
+  { id: 'tradingServer', label: 'Trading Server', alignRight: false },
+  { id: 'isLogin', label: 'Logged In ', alignRight: false },
   { id: '_id' },
 ];
-
-// ----------------------------------------------------------------------
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -108,17 +114,11 @@ export default function UserPage() {
   const [deleteUser, setdeletedUser] = useState(false);
 
   const [page, setPage] = useState(0);
-
   const [order, setOrder] = useState('asc');
-
   const [selected, setSelected] = useState([]);
-
   const [orderBy, setOrderBy] = useState('name');
-
   const [filterName, setFilterName] = useState('');
-
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [isLoading, setIslaoading] = useState(false);
 
@@ -132,27 +132,7 @@ export default function UserPage() {
     setOpen(null);
   };
   const handledeleteUser = async () => {
-    try {
-      setIsDeleteLoading(true);
-      const deletedata = await deleteSelectedUser(id);
-      if (deletedata.message === 'Unauthorized') {
-        localStorage.setItem('token', '');
-        navigate('/');
-      }
-      if (deletedata.status === true) {
-        toast.success('User Deleted Successfully');
-        handleCloseMenu();
-      }
-      getdata();
-      setIsDeleteLoading(false);
-    } catch (error) {
-      setIsDeleteLoading(false);
-      const message =
-        (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-      console.log(message);
-      toast.error(message);
-      handleCloseMenu();
-    }
+    console.log("Delete User")
   };
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -206,374 +186,84 @@ export default function UserPage() {
   // const userdata = useSelector((state) => state.userListState);
   const getdata = async () => {
     try {
-      setIslaoading(true);
-      const user = [
-        {
-          _id: '6707b4ed56c8206a003c7f51',
-          identifier: '$2b$12$OSHUicJPx99s9FVWucVZKuNqjLitmJUGyzZUOWzN867Yk4ecg8j6O',
-          password: '$2b$12$OSHUicJPx99s9FVWucVZKu8W761kJSOBJJbF/eNmDmRZfYj0yj9fO',
-          userType: 'Customer',
-          devices: ['66a725c9cbf740f66ca5eedb', '67061e76d0026a998639e3e4'],
-          loggedOutDevices: ['67078f5446fe1f164eea60df'],
-          notificationOn: true,
-          socialType: null,
-          isDeleted: false,
-          blockedMeUsers: [],
-          blockedUsers: [],
-          isCompleteProfile: true,
-          isVerify: true,
-          reportUsers: [],
-          createdAt: '2024-10-10T11:05:17.364Z',
-          updatedAt: '2024-10-11T13:09:13.111Z',
-          __v: 0,
-          OTP: '6707b4ee56c8206a003c7f53',
-          profile: {
-            _id: '6707b4ee56c8206a003c7f55',
-            fullName: 'Jacob',
-            auth: '6707b4ed56c8206a003c7f51',
-            age: 23,
-            bio: 'new',
-            post: ['6707b72456c8206a003c816f'],
-            follower: [
-              {
-                _id: '66be175ef38438bb6948e1b9',
-                identifier: '$2b$12$OSHUicJPx99s9FVWucVZKufLiFWMuJEWKpgqrV/KBwx7sXzdNipXG',
-                password: '$2b$12$OSHUicJPx99s9FVWucVZKu8W761kJSOBJJbF/eNmDmRZfYj0yj9fO',
-                userType: 'Customer',
-                devices: ['66be1760f8a9ad2071e2a36f', '67078f5446fe1f164eea60df'],
-                loggedOutDevices: ['66a724cdcbf740f66ca3c4cf', '66a725c9cbf740f66ca5eedb', '67061e76d0026a998639e3e4'],
-                notificationOn: true,
-                socialType: null,
-                isDeleted: false,
-                blockedMeUsers: [],
-                blockedUsers: [],
-                isCompleteProfile: true,
-                isVerify: true,
-                reportUsers: [],
-                createdAt: '2024-08-15T14:57:34.351Z',
-                updatedAt: '2024-10-11T13:09:12.725Z',
-                __v: 0,
-                OTP: null,
-                profile: '66be175ff38438bb6948e1bd',
-              },
-            ],
-            following: [],
-            createdAt: '2024-10-10T11:05:18.668Z',
-            updatedAt: '2024-10-11T12:14:22.634Z',
-            __v: 0,
-            hobies: 'new',
-            image: {
-              _id: '6707b51d56c8206a003c7f6a',
-              file: '4-1728558365098.jpg',
-              fileType: 'Image',
-              fileRole: 'image',
-              userType: 'Customer',
-              user: '6707b4ee56c8206a003c7f55',
-              createdAt: '2024-10-10T11:06:05.104Z',
-              updatedAt: '2024-10-10T11:06:05.104Z',
-              __v: 0,
-            },
-            song: 'new',
-          },
-        },
-        {
-          _id: '6707b54b56c8206a003c7f7f',
-          identifier: '$2b$12$OSHUicJPx99s9FVWucVZKuwMhygIGvmcFwF6lq4GTC4XrGiLzSCbi',
-          password: '$2b$12$OSHUicJPx99s9FVWucVZKu8W761kJSOBJJbF/eNmDmRZfYj0yj9fO',
-          userType: 'Instructor',
-          devices: [],
-          loggedOutDevices: ['67061e76d0026a998639e3e4'],
-          notificationOn: true,
-          socialType: null,
-          isDeleted: false,
-          blockedMeUsers: [],
-          blockedUsers: [],
-          isCompleteProfile: true,
-          isVerify: true,
-          reportUsers: [],
-          createdAt: '2024-10-10T11:06:51.112Z',
-          updatedAt: '2024-10-11T12:09:06.003Z',
-          __v: 0,
-          OTP: '6707b54b56c8206a003c7f81',
-          profile: {
-            _id: '6707b54c56c8206a003c7f83',
-            fullName: 'Elias',
-            auth: '6707b54b56c8206a003c7f7f',
-            age: 23,
-            certificate: ['6707b57656c8206a003c7f99'],
-            dietRate: 120,
-            routineRate: 100,
-            stripeConnected: false,
-            post: [],
-            follower: [],
-            following: [],
-            createdAt: '2024-10-10T11:06:52.482Z',
-            updatedAt: '2024-10-10T11:53:20.881Z',
-            __v: 0,
-            address: 'tesat',
-            bio: 'twast',
-            experience: 'test',
-            image: {
-              _id: '6707b57656c8206a003c7f98',
-              file: '4-1728558454704.jpg',
-              fileType: 'Image',
-              fileRole: 'image',
-              userType: 'Instructor',
-              user: '6707b54c56c8206a003c7f83',
-              createdAt: '2024-10-10T11:07:34.718Z',
-              updatedAt: '2024-10-10T11:07:34.718Z',
-              __v: 0,
-            },
-            skills: 'test',
-            workingAt: 'testtes',
-          },
-        },
-        {
-          _id: '670e92efb65e95c0d114bd00',
-          identifier: '$2b$12$OSHUicJPx99s9FVWucVZKuZR26gmPU2ly7ZiyiK2ekNKE5iuz6jse',
-          password: '$2b$12$OSHUicJPx99s9FVWucVZKucit/o3MPg.gkC/SpHQ17MrA8fmY9l/m',
-          userType: 'Instructor',
-          devices: ['670e92f177e1dd5f335fc36c'],
-          loggedOutDevices: [],
-          notificationOn: true,
-          socialType: null,
-          isDeleted: false,
-          blockedMeUsers: [],
-          blockedUsers: [],
-          isCompleteProfile: true,
-          isVerify: true,
-          reportUsers: [],
-          createdAt: '2024-10-15T16:06:07.567Z',
-          updatedAt: '2024-10-15T16:07:05.285Z',
-          __v: 0,
-          OTP: '670e92f0b65e95c0d114bd02',
-          profile: {
-            _id: '670e92f0b65e95c0d114bd04',
-            fullName: 'Trainer103',
-            auth: '670e92efb65e95c0d114bd00',
-            age: 30,
-            certificate: ['670e9329b65e95c0d114bd19', '670e9329b65e95c0d114bd1a'],
-            dietRate: 20,
-            routineRate: 30,
-            stripeConnected: false,
-            post: [
-              '670e9849b65e95c0d114bfba',
-              '670e9d14b65e95c0d114ca19',
-              '670e9d30b65e95c0d114ca39',
-              '670e9d5fb65e95c0d114ca5a',
-            ],
-            follower: [],
-            following: [],
-            createdAt: '2024-10-15T16:06:08.921Z',
-            updatedAt: '2024-10-15T16:50:40.134Z',
-            __v: 0,
-            address: 'test',
-            bio: 'test',
-            experience: '2',
-            image: {
-              _id: '670e9329b65e95c0d114bd18',
-              file: '098b618f-2152-4f1c-bbba-0207a13912504173602957782588029-1729008423907.jpg',
-              fileType: 'Image',
-              fileRole: 'image',
-              userType: 'Instructor',
-              user: '670e92f0b65e95c0d114bd04',
-              createdAt: '2024-10-15T16:07:05.091Z',
-              updatedAt: '2024-10-15T16:07:05.091Z',
-              __v: 0,
-            },
-            skills: 'test',
-            workingAt: 'test',
-            routine: '670e965ab65e95c0d114bda8',
-            dietplane: '670e978eb65e95c0d114be87',
-          },
-        },
-        {
-          _id: '670ea002b65e95c0d114d33f',
-          devices: ['670ea00377e1dd5f337d647c'],
-          loggedOutDevices: [],
-          notificationOn: true,
-          socialType: 'google',
-          isDeleted: false,
-          blockedMeUsers: [],
-          blockedUsers: [],
-          isCompleteProfile: true,
-          isVerify: false,
-          reportUsers: [],
-          identifier: '$2b$12$OSHUicJPx99s9FVWucVZKui1MiZqhAuLL8Kde2VEko8XFdtgrJ6IS',
-          userType: 'Instructor',
-          createdAt: '2024-10-15T17:01:54.490Z',
-          updatedAt: '2024-10-15T17:02:28.928Z',
-          __v: 0,
-          profile: {
-            _id: '670ea003b65e95c0d114d344',
-            fullName: 'Tommy Robert Jr.',
-            auth: '670ea002b65e95c0d114d33f',
-            age: 2,
-            certificate: ['670ea024b65e95c0d114d34f'],
-            dietRate: 20,
-            routineRate: 30,
-            stripeConnected: false,
-            post: [],
-            follower: [],
-            following: [],
-            createdAt: '2024-10-15T17:01:55.634Z',
-            updatedAt: '2024-10-15T17:03:29.845Z',
-            __v: 0,
-            address: 'test',
-            bio: 'test',
-            experience: '2',
-            image: {
-              _id: '670ea024b65e95c0d114d34e',
-              file: '45174525-537f-4de2-b123-2b3b278a0bf13093050785059029481-1729011747226.jpg',
-              fileType: 'Image',
-              fileRole: 'image',
-              userType: 'Instructor',
-              user: '670ea003b65e95c0d114d344',
-              createdAt: '2024-10-15T17:02:28.729Z',
-              updatedAt: '2024-10-15T17:02:28.729Z',
-              __v: 0,
-            },
-            skills: 'test',
-            workingAt: 'test',
-          },
-        },
-        {
-          _id: '670f6ea8b65e95c0d114e1ef',
-          devices: ['670f6ea977e1dd5f33303bb5'],
-          loggedOutDevices: [],
-          notificationOn: false,
-          socialType: 'google',
-          isDeleted: false,
-          blockedMeUsers: [],
-          blockedUsers: [],
-          isCompleteProfile: true,
-          isVerify: false,
-          reportUsers: [],
-          identifier: '$2b$12$OSHUicJPx99s9FVWucVZKuNVZ9Rn.NdrqCASEOCuG3ZNHRVG7vEC2',
-          userType: 'Customer',
-          createdAt: '2024-10-16T07:43:36.517Z',
-          updatedAt: '2024-10-17T07:12:26.332Z',
-          __v: 0,
-          profile: {
-            _id: '670f6ea9b65e95c0d114e1f4',
-            fullName: 'jack beck',
-            auth: '670f6ea8b65e95c0d114e1ef',
-            age: 23,
-            bio: '23',
-            post: [],
-            follower: [],
-            following: [],
-            createdAt: '2024-10-16T07:43:37.604Z',
-            updatedAt: '2024-10-17T07:25:57.738Z',
-            __v: 0,
-            hobies: '23',
-            image: {
-              _id: '670f6eb6b65e95c0d114e20d',
-              file: 'image_2024_01_02T21_07_01_366Z-1729064630807.png',
-              fileType: 'Image',
-              fileRole: 'image',
-              userType: 'Customer',
-              user: '670f6ea9b65e95c0d114e1f4',
-              createdAt: '2024-10-16T07:43:50.998Z',
-              updatedAt: '2024-10-16T07:43:50.998Z',
-              __v: 0,
-            },
-            song: '23',
-            dietplane: '6710bc05b65e95c0d114f698',
-          },
-        },
-        {
-          _id: '670fae6db65e95c0d114e661',
-          devices: ['670fae6d77e1dd5f33c564aa'],
-          loggedOutDevices: [],
-          notificationOn: true,
-          socialType: 'google',
-          isDeleted: false,
-          blockedMeUsers: [],
-          blockedUsers: [],
-          isCompleteProfile: true,
-          isVerify: false,
-          reportUsers: [],
-          identifier: '$2b$12$OSHUicJPx99s9FVWucVZKu0vSZQL9Ek3wLNK0MURhGBndLEjAx7h2',
-          userType: 'Instructor',
-          createdAt: '2024-10-16T12:15:41.078Z',
-          updatedAt: '2024-10-16T12:31:48.177Z',
-          __v: 0,
-          profile: {
-            _id: '670fae6eb65e95c0d114e666',
-            fullName: 'Paulina Patrova',
-            auth: '670fae6db65e95c0d114e661',
-            age: 20,
-            certificate: ['670fae95b65e95c0d114e682', '670fae95b65e95c0d114e683'],
-            dietRate: 20,
-            routineRate: 30,
-            stripeConnected: false,
-            post: [],
-            follower: [
-              {
-                _id: '665d8296ef23b647b481e015',
-                identifier: '$2b$12$OSHUicJPx99s9FVWucVZKuV3lK9FGUXmLv6urVRuy0CYU0VWJvk4K',
-                password: '$2b$12$OSHUicJPx99s9FVWucVZKu8W761kJSOBJJbF/eNmDmRZfYj0yj9fO',
-                userType: 'Customer',
-                devices: ['670faedd77e1dd5f33c68279'],
-                loggedOutDevices: [
-                  '665d855c4ea20e442e938661',
-                  '665d82984ea20e442e8ceb9e',
-                  '6660638b6233d900449267b7',
-                  '670f52c377e1dd5f33efae05',
-                ],
-                notificationOn: true,
-                socialType: null,
-                isDeleted: false,
-                blockedMeUsers: ['665d81ebef23b647b481dfbf'],
-                blockedUsers: [],
-                isCompleteProfile: true,
-                isVerify: true,
-                reportUsers: [],
-                createdAt: '2024-06-03T08:45:10.502Z',
-                updatedAt: '2024-10-16T12:17:33.332Z',
-                __v: 0,
-                OTP: '665d8297ef23b647b481e017',
-                profile: '665d8297ef23b647b481e019',
-              },
-            ],
-            following: [],
-            createdAt: '2024-10-16T12:15:42.146Z',
-            updatedAt: '2024-10-16T12:32:36.030Z',
-            __v: 0,
-            address: 'test',
-            bio: 'test',
-            experience: '2',
-            image: {
-              _id: '670fae95b65e95c0d114e681',
-              file: '75f8a204-8cdd-4cc9-aa0a-5246eb857f4a6326879692963075693-1729080975915.jpg',
-              fileType: 'Image',
-              fileRole: 'image',
-              userType: 'Instructor',
-              user: '670fae6eb65e95c0d114e666',
-              createdAt: '2024-10-16T12:16:21.239Z',
-              updatedAt: '2024-10-16T12:16:21.239Z',
-              __v: 0,
-            },
-            skills: 'test test',
-            workingAt: 'test',
-            dietplane: '670faf77b65e95c0d114e8e9',
-          },
-        },
-      ];
-      setIslaoading(false);
-      setdata(user);
+      setIslaoading(true); // Start loading
+      const querySnapshot = await getDocs(collection(db, 'users')); // Fetch data from the 'Users' collection
+
+      const userList = querySnapshot.docs.map((doc) => ({
+        id: doc.id, // Include document ID if needed
+        ...doc.data(), 
+      }));
+
+      console.log(userList)
+      setdata(userList); // Set the user data
+      setIslaoading(false); // Stop loading
     } catch (error) {
-      //   const message =
-      //     (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-      //   console.log(message);
-      //   toast.error(message);
-      //   setIslaoading(false);
+      const message = error.message || error.toString();
+      // console.error('Error fetching users: ', message);
+      setIslaoading(false); // Stop loading even on error
     }
   };
   useEffect(() => {
     getdata();
   }, [deleteUser]);
+
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    name: '',
+    challengeName: '',
+    tradingAccountNumber: '',
+    tradingPassword: '',
+    tradingServer: ''
+  });
+
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  // Function to handle form input changes
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  // Function to create user in Firebase Auth
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const { email, password, name, challengeName, tradingAccountNumber, tradingPassword, tradingServer } = formData;
+
+    try {
+      // Create user with email and password in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Store user data in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        "id": user.uid,
+        name,
+        email,
+        challengeName,
+        tradingAccountNumber,
+        tradingPassword,
+        tradingServer
+      });
+
+      // Show success toast
+      toast.success('User created successfully!');
+      setError('');
+      setIsModalOpen(false);
+    } catch (error) {
+      // Show error toast
+      // toast.error('Error: ' + error.message);
+      setError(error.message);
+      setSuccess('');
+    }
+  };
+
+
 
   return (
     <>
@@ -581,25 +271,89 @@ export default function UserPage() {
         <title> User </title>
       </Helmet>
 
+      {/* Modal for Add User */}
+
+      <Dialog
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        PaperProps={{
+          style: {
+            // backgroundColor: '#1A202C', // Matches 'bg-gray-900'
+            border: '1px solid #FAFF00',
+            padding: '2rem', // Matches p-8
+            width: '90%',
+            maxWidth: '600px', // Matches md:w-[60%]
+            borderRadius: '8px',
+          },
+        }}
+      >
+        <DialogTitle>
+          <div className="flex justify-between" style={{ display: "Flex", justifyContent: "space-between" }}>
+            <h2 className="text-2xl text-white">Add User</h2>
+            <IconButton
+              onClick={() => setIsModalOpen(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') setIsModalOpen(false);
+              }}
+              edge="end"
+              color="inherit"
+              aria-label="close"
+              tabIndex={0}
+            >
+              <Icon icon={closeIcon} width="24" height="24" />
+            </IconButton>
+          </div>
+        </DialogTitle>
+
+        <DialogContent>
+          {/* Form */}
+          <form onSubmit={handleSubmit}>
+            {['name', 'email', 'password', 'challengeName', 'tradingAccountNumber', 'tradingPassword', 'tradingServer'].map((field) => (
+              <Box key={field} mb={2}> {/* Adds spacing between fields */}
+                <TextField
+                  label={field.split(/(?=[A-Z])/).join(' ')} // Converts camelCase to spaced words
+                  variant="outlined"
+                  fullWidth
+                  name={field}
+                  type={field.includes('password') ? 'password' : 'text'}
+                  value={formData[field]}
+                  onChange={handleChange}
+                  InputProps={{
+                    style: {
+                      borderColor: '#FAFF00',
+                    },
+                  }}
+                  placeholder={field.split(/(?=[A-Z])/).join(' ')}
+                  required
+                />
+              </Box>
+            ))}
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              style={{ backgroundColor: '#FAFF00', color: 'black' }}
+            >
+              Create User
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+
+
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
         <Typography variant="h4" gutterBottom>
           User
         </Typography>
-        <Box component={'div'}>
-          <Typography variant="p" gutterBottom>
-            Deleted Users
-          </Typography>
-          <Switch
-            checked={deleteUser}
-            onChange={() => {
-              setdeletedUser(!deleteUser);
-            }}
-            inputProps={{ 'aria-label': 'controlled' }}
-          />
+        <Box>
+          <Button variant='contained' onClick={() => setIsModalOpen(true)}>
+            Add User
+          </Button>
         </Box>
-        {/* <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-            New User
-          </Button> */}
+
       </Stack>
 
       <Card>
@@ -631,44 +385,21 @@ export default function UserPage() {
                           <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, row._id)} />
                         </TableCell>
 
-                        <TableCell component="th" scope="row" padding="none">
-                          <Stack direction="row" alignItems="center" spacing={2}>
-                            {row.profile?.image?.file ? (
-                              <Box
-                                sx={{ width: 40, height: 40, borderRadius: '50px', margin: '12px' }}
-                                component="img"
-                                alt={row.profile?.fullName}
-                                src={imgURL + row.profile?.image?.file}
-                              />
-                            ) : (
-                              <Avatar
-                                style={{ margin: '12px' }}
-                                sx={{
-                                  bgcolor: stringToColor(row.profile?.fullName),
-                                }}
-                                children={
-                                  row.profile?.fullName.split(' ').length > 1
-                                    ? `${row.profile?.fullName.split(' ')[0][0]}${
-                                        row.profile.fullName.split(' ')[1][0]
-                                      }`
-                                    : `${row.profile?.fullName.split(' ')[0][0]}`
-                                }
-                              />
-                            )}
-                          </Stack>
-                        </TableCell>
+                       
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
                             <Typography variant="subtitle2" noWrap>
-                              {row.profile?.fullName}
+                              {row?.name}
                             </Typography>
                           </Stack>
                         </TableCell>
-                        <TableCell align="left">{row.userType}</TableCell>
+                        <TableCell align="left">{row.email}</TableCell>
 
-                        <TableCell align="left">{row.isCompleteProfile ? 'Complete' : 'Pending'}</TableCell>
+                        <TableCell align="left">{row?.challengeName}</TableCell>
 
-                        <TableCell align="left">{row.profile?.post?.length}</TableCell>
+                        <TableCell align="left">{row?.tradingAccountNumber}</TableCell>
+                        <TableCell align="left">{row?.tradingServer}</TableCell>
+                        <TableCell align="left">{"False"}</TableCell>
 
                         {/* <TableCell align="left">
                           <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
@@ -764,10 +495,6 @@ export default function UserPage() {
           },
         }}
       >
-        {/* <MenuItem>
-          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Edit
-        </MenuItem> */}
 
         <Button sx={{ color: 'error.main' }} onClick={handledeleteUser} disabled={isDeleteLoading}>
           <Iconify icon={'eva:trash-2-outline'} /> {isDeleteLoading ? 'Loading' : ' Delete'}

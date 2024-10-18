@@ -16,31 +16,31 @@ const navConfig = [
     path: '/dashboard/user',
     icon: icon('user-circle-svgrepo-com'),
   },
-  {
-    title: 'Products',
-    path: '/dashboard/product',
-    icon: icon('post-svgrepo-com'),
-  },
-  {
-    title: 'content',
-    path: '/dashboard/content',
-    icon: icon('content-email-inbox-mail-message-icon-svgrepo-com'),
-  },
+  // {
+  //   title: 'Products',
+  //   path: '/dashboard/product',
+  //   icon: icon('post-svgrepo-com'),
+  // },
+  // {
+  //   title: 'content',
+  //   path: '/dashboard/content',
+  //   icon: icon('content-email-inbox-mail-message-icon-svgrepo-com'),
+  // },
   // {
   //   title: 'subscription',
   //   path: '/dashboard/subscription',
   //   icon: icon('collection-email-svgrepo-com'),
   // },
-  {
-    title: 'Notifications',
-    path: '/dashboard/notification',
-    icon: icon('notification-bell-1397-svgrepo-com'),
-  },
-  {
-    title: 'Requests',
-    path: '/dashboard/request',
-    icon: icon('request-added-svgrepo-com'),
-  },
+  // {
+  //   title: 'Notifications',
+  //   path: '/dashboard/notification',
+  //   icon: icon('notification-bell-1397-svgrepo-com'),
+  // },
+  // {
+  //   title: 'Requests',
+  //   path: '/dashboard/request',
+  //   icon: icon('request-added-svgrepo-com'),
+  // },
   // {
   //   title: 'Exercise',
   //   path: '/dashboard/exercise',
@@ -56,11 +56,11 @@ const navConfig = [
   //   path: '/dashboard/diet',
   //   icon: icon('diet-vegan-svgrepo-com'),
   // },
-  {
-    title: 'Orders',
-    path: '/dashboard/orders',
-    icon: icon('money-send-svgrepo-com'),
-  },
+  // {
+  //   title: 'Orders',
+  //   path: '/dashboard/orders',
+  //   icon: icon('money-send-svgrepo-com'),
+  // },
   // {
   //   title: 'Nutrition',
   //   path: '/dashboard/nutrition',
