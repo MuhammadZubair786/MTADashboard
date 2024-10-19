@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { useEffect, useState } from 'react';
 // @mui
@@ -47,13 +48,16 @@ import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
 import { imgURL } from '../service/config';
 
-
 const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
   { id: 'email', label: 'Email', alignRight: false },
+  { id: 'password', label: 'Password', alignRight: false },
   { id: 'challengeName', label: 'Challange', alignRight: false },
   { id: 'tradingAccountNumber', label: 'Trading Account Number', alignRight: false },
+
+
   { id: 'tradingServer', label: 'Trading Server', alignRight: false },
+  { id: 'tradingAccountNumber', label: 'Trading Account Password', alignRight: false },
   { id: 'isLogin', label: 'Logged In ', alignRight: false },
   { id: '_id' },
 ];
@@ -121,6 +125,7 @@ export default function UserPage() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [isLoading, setIslaoading] = useState(false);
+  const [isLoading2, setIslaoading2] = useState(false);
 
   const handleOpenMenu = (event) => {
     setid(event.currentTarget.value);
@@ -132,7 +137,7 @@ export default function UserPage() {
     setOpen(null);
   };
   const handledeleteUser = async () => {
-    console.log("Delete User")
+    console.log('Delete User');
   };
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -191,11 +196,14 @@ export default function UserPage() {
 
       const userList = querySnapshot.docs.map((doc) => ({
         id: doc.id, // Include document ID if needed
-        ...doc.data(), 
+        ...doc.data(),
       }));
 
-      console.log(userList)
-      setdata(userList); // Set the user data
+      console.log(userList);
+      const reversedUserList = userList.reverse();
+
+setdata(reversedUserList);
+     
       setIslaoading(false); // Stop loading
     } catch (error) {
       const message = error.message || error.toString();
@@ -207,7 +215,6 @@ export default function UserPage() {
     getdata();
   }, [deleteUser]);
 
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -216,7 +223,7 @@ export default function UserPage() {
     challengeName: '',
     tradingAccountNumber: '',
     tradingPassword: '',
-    tradingServer: ''
+    tradingServer: '',
   });
 
   const [error, setError] = useState('');
@@ -235,35 +242,64 @@ export default function UserPage() {
     e.preventDefault();
     const { email, password, name, challengeName, tradingAccountNumber, tradingPassword, tradingServer } = formData;
 
+    setIslaoading2(true); // Start loading
+    setError(''); // Reset error
+
     try {
       // Create user with email and password in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       // Store user data in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        "id": user.uid,
+      await setDoc(doc(db, 'users', user.uid), {
+        id: user.uid,
         name,
+        password,
         email,
         challengeName,
         tradingAccountNumber,
         tradingPassword,
-        tradingServer
+        tradingServer,
+        createdAt: new Date(),
       });
 
       // Show success toast
       toast.success('User created successfully!');
-      setError('');
+     getdata()
       setIsModalOpen(false);
+      setFormData({
+        email: '',
+        password: '',
+        name: '',
+        challengeName: '',
+        tradingAccountNumber: '',
+        tradingPassword: '',
+        tradingServer: '',
+      });
     } catch (error) {
+      // Map Firebase error codes to user-friendly messages
+      let errorMessage;
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          errorMessage = 'This email is already in use.';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Please enter a valid email address.';
+          break;
+        case 'auth/weak-password':
+          errorMessage = 'The password is too weak. Please choose a stronger password.';
+          break;
+        default:
+          errorMessage = 'An unexpected error occurred. Please try again.';
+      }
+
       // Show error toast
-      // toast.error('Error: ' + error.message);
-      setError(error.message);
-      setSuccess('');
+      toast.error(errorMessage);
+      setError(errorMessage);
+    } finally {
+      setIslaoading2(false); // Stop loading
     }
   };
-
-
 
   return (
     <>
@@ -288,7 +324,7 @@ export default function UserPage() {
         }}
       >
         <DialogTitle>
-          <div className="flex justify-between" style={{ display: "Flex", justifyContent: "space-between" }}>
+          <div className="flex justify-between" style={{ display: 'Flex', justifyContent: 'space-between' }}>
             <h2 className="text-2xl text-white">Add User</h2>
             <IconButton
               onClick={() => setIsModalOpen(false)}
@@ -308,8 +344,18 @@ export default function UserPage() {
         <DialogContent>
           {/* Form */}
           <form onSubmit={handleSubmit}>
-            {['name', 'email', 'password', 'challengeName', 'tradingAccountNumber', 'tradingPassword', 'tradingServer'].map((field) => (
-              <Box key={field} mb={2}> {/* Adds spacing between fields */}
+            {[
+              'name',
+              'email',
+              'password',
+              'challengeName',
+              'tradingAccountNumber',
+              'tradingPassword',
+              'tradingServer',
+            ].map((field) => (
+              <Box key={field} mb={2}>
+                {' '}
+                {/* Adds spacing between fields */}
                 <TextField
                   label={field.split(/(?=[A-Z])/).join(' ')} // Converts camelCase to spaced words
                   variant="outlined"
@@ -335,25 +381,23 @@ export default function UserPage() {
               variant="contained"
               fullWidth
               style={{ backgroundColor: '#FAFF00', color: 'black' }}
+              disabled={isLoading2} // Disable button while loading
             >
-              Create User
+              {isLoading2 ? <CircularProgress size={24} color="inherit" /> : 'Create User'}
             </Button>
           </form>
         </DialogContent>
       </Dialog>
-
-
 
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
         <Typography variant="h4" gutterBottom>
           User
         </Typography>
         <Box>
-          <Button variant='contained' onClick={() => setIsModalOpen(true)}>
+          <Button variant="contained" onClick={() => setIsModalOpen(true)}>
             Add User
           </Button>
         </Box>
-
       </Stack>
 
       <Card>
@@ -385,7 +429,6 @@ export default function UserPage() {
                           <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, row._id)} />
                         </TableCell>
 
-                       
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
                             <Typography variant="subtitle2" noWrap>
@@ -394,12 +437,15 @@ export default function UserPage() {
                           </Stack>
                         </TableCell>
                         <TableCell align="left">{row.email}</TableCell>
+                        <TableCell align="left">{row.password}</TableCell>
 
                         <TableCell align="left">{row?.challengeName}</TableCell>
 
                         <TableCell align="left">{row?.tradingAccountNumber}</TableCell>
                         <TableCell align="left">{row?.tradingServer}</TableCell>
-                        <TableCell align="left">{"False"}</TableCell>
+                        <TableCell align="left">{row?.tradingPassword}</TableCell>
+
+                        <TableCell align="left">{'False'}</TableCell>
 
                         {/* <TableCell align="left">
                           <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
@@ -448,7 +494,7 @@ export default function UserPage() {
               {!isLoading && data?.length === 0 && (
                 <TableBody>
                   <TableRow>
-                    <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                    <TableCell align="center" colSpan={8} sx={{ py: 3 }}>
                       <Paper
                         sx={{
                           textAlign: 'center',
@@ -495,7 +541,6 @@ export default function UserPage() {
           },
         }}
       >
-
         <Button sx={{ color: 'error.main' }} onClick={handledeleteUser} disabled={isDeleteLoading}>
           <Iconify icon={'eva:trash-2-outline'} /> {isDeleteLoading ? 'Loading' : ' Delete'}
         </Button>
