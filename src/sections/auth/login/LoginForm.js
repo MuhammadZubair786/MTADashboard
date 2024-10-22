@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 // @mui
 import { Stack, IconButton, InputAdornment, TextField, Box } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 // components
+import { auth } from '../../../service/firebase';
 import Iconify from '../../../components/iconify';
 
 // ----------------------------------------------------------------------
@@ -16,28 +18,29 @@ export default function LoginForm() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
- 
+
 
   const handleClick = async () => {
-    setLoading(true); 
+    setLoading(true);
 
     // Validation for empty fields
     if (!email || !password) {
-      setLoading(false); 
+      setLoading(false);
       setError('Please fill in both email and password fields.');
       return;
     }
-
+    const user = await signInWithEmailAndPassword(auth,email, password)
+    console.log(user)
     // Hardcoded check for correct credentials
-    if (email === 'admin123@gmail.com' && password === 'admin123') {
+    if (user.user) {
       localStorage.setItem('token', JSON.stringify('gfhfg'));
       setTimeout(() => {
-        setLoading(false); 
+        setLoading(false);
         navigate('/dashboard', { replace: true });
       }, 3000);
     } else {
       setError('Invalid email or password.');
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -81,7 +84,7 @@ export default function LoginForm() {
         {error}
       </Box>
 
-      <LoadingButton fullWidth size="large"  loading={loading}  type="submit" variant="contained" onClick={handleClick}>
+      <LoadingButton fullWidth size="large" loading={loading} type="submit" variant="contained" onClick={handleClick}>
         Login
       </LoadingButton>
     </>

@@ -452,7 +452,7 @@ setdata(reversedUserList);
                         </TableCell> */}
 
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={handleOpenMenu} value={row?.profile?._id}>
+                          <IconButton size="large" color="inherit" onClick={handleOpenMenu} value={row?.id}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -541,6 +541,10 @@ setdata(reversedUserList);
           },
         }}
       >
+         <Button sx={{ color: 'info.main' }} onClick={()=>navigate(`/dashboard/user/${id}`)} >
+          Upload Statement
+          {/* <Iconify icon={'eva:detail-2-outline'} /> {isDeleteLoading ? 'Loading' : ' Delete'} */}
+        </Button>
         <Button sx={{ color: 'error.main' }} onClick={handledeleteUser} disabled={isDeleteLoading}>
           <Iconify icon={'eva:trash-2-outline'} /> {isDeleteLoading ? 'Loading' : ' Delete'}
         </Button>

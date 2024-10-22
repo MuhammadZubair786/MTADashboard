@@ -20,6 +20,7 @@ import Diet from './pages/Diet';
 import Nutrition from './pages/Nutrition';
 import Routine from './pages/Routine';
 import Orders from './pages/OrdersPage';
+import UploadStatement from './pages/UploadStatement';
 
 export default function Router() {
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ export default function Router() {
         { element: <Navigate to="/dashboard/app" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },
         { path: 'user', element: <UserPage /> },
+        { path: 'user/:id', element: <UploadStatement /> },
         // { path: 'product', element: <PostPage /> },
         // { path: 'content', element: <ContentPage /> },
         // { path: 'subscription', element: <PostPage /> },
