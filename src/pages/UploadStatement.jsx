@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Papa from 'papaparse';
 import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { LoadingButton } from '@mui/lab';
 import { db } from '../service/firebase';
 
 function UploadStatement() {
@@ -9,7 +10,7 @@ function UploadStatement() {
     const [user, setUser] = useState(null);
     const [file, setFile] = useState(null);
     const [uploadMessage, setUploadMessage] = useState('');
-
+    const [loading, setLoading] = useState(false)
     // Fetch user data from Firestore
     useEffect(() => {
         const fetchUser = async () => {
@@ -39,6 +40,7 @@ function UploadStatement() {
         }
 
         const fileExtension = file.name.split('.').pop().toLowerCase();
+        setLoading(true)
 
         if (fileExtension === 'csv') {
             handleCsvUpload();
@@ -62,8 +64,11 @@ function UploadStatement() {
                         });
                     });
                     await Promise.all(promises);
-                    alert('CSV data uploaded successfully!');
-                    setUploadMessage('CSV data uploaded successfully!');
+                    setTimeout(() => {
+                        setLoading(false)
+                        alert('CSV data uploaded successfully!');
+                        setUploadMessage('CSV data uploaded successfully!');
+                    }, 1500);
                 } catch (error) {
                     console.error('Error uploading CSV data:', error);
                     alert('Error uploading CSV data. Please try again.');
@@ -153,8 +158,11 @@ function UploadStatement() {
                 });
                 // });
                 // await Promise.all(promises);
-                // alert('HTML data uploaded successfully!');
-                setUploadMessage('HTML data uploaded successfully!');
+                setTimeout(() => {
+                    setLoading(false)
+                    alert('HTML data uploaded successfully!');
+                    setUploadMessage('HTML data uploaded successfully!');
+                }, 1500);
             } catch (error) {
                 console.error('Error uploading HTML data:', error);
                 alert('Error uploading HTML data. Please try again.');
@@ -177,7 +185,7 @@ function UploadStatement() {
                 accept=".csv, .html"
                 onChange={handleFileChange}
             />
-            <button onClick={handleUpload}>Upload Statement</button>
+            <LoadingButton size="large" loading={loading} type="submit" variant="contained" onClick={handleUpload}>Upload Statement</LoadingButton>
             {uploadMessage && <p>{uploadMessage}</p>} {/* Display upload status */}
         </div>
     );

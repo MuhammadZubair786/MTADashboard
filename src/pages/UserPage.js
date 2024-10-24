@@ -202,8 +202,8 @@ export default function UserPage() {
       console.log(userList);
       const reversedUserList = userList.reverse();
 
-setdata(reversedUserList);
-     
+      setdata(reversedUserList);
+
       setIslaoading(false); // Stop loading
     } catch (error) {
       const message = error.message || error.toString();
@@ -265,7 +265,7 @@ setdata(reversedUserList);
 
       // Show success toast
       toast.success('User created successfully!');
-     getdata()
+      getdata()
       setIsModalOpen(false);
       setFormData({
         email: '',
@@ -538,10 +538,12 @@ setdata(reversedUserList);
               typography: 'body2',
               borderRadius: 0.75,
             },
+            display: "flex",
+            flexDirection: "column"
           },
         }}
       >
-         <Button sx={{ color: 'info.main' }} onClick={()=>navigate(`/dashboard/user/${id}`)} >
+        <Button sx={{ color: 'info.main' }} onClick={() => navigate(`/dashboard/user/${id}`)} >
           Upload Statement
           {/* <Iconify icon={'eva:detail-2-outline'} /> {isDeleteLoading ? 'Loading' : ' Delete'} */}
         </Button>
