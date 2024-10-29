@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Papa from 'papaparse';
-import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, query, where, getDoc, updateDoc } from 'firebase/firestore';
 import { LoadingButton } from '@mui/lab';
 import { db } from '../service/firebase';
 
@@ -40,14 +40,16 @@ function UploadStatement() {
         }
 
         const fileExtension = file.name.split('.').pop().toLowerCase();
-        setLoading(true)
+        // setLoading(true)
 
         if (fileExtension === 'csv') {
             handleCsvUpload();
-        } else if (fileExtension === 'html') {
+        }
+        //  else if (fileExtension === 'html') {
+        // } 
+        else {
             handleHtmlUpload();
-        } else {
-            alert('Unsupported file format. Please upload a CSV or HTML file.');
+            // alert('Unsupported file format. Please upload a CSV or HTML file.');
         }
     };
 
@@ -83,86 +85,91 @@ function UploadStatement() {
         const reader = new FileReader();
         reader.onload = async (event) => {
             const htmlContent = event.target.result;
-            // console.log(htmlContent)
+
             try {
-                // Parse HTML content here (basic example)
+                // Parse HTML content with DOMParser
                 const parser = new DOMParser();
-                // console.log("parser", parser)
-
                 const doc = parser.parseFromString(htmlContent, 'text/html');
-                // Extract user details (personal information)
-                const userDetails = Array.from(doc.querySelectorAll('div')).find(div =>
-                    div.textContent.includes("Account") && div.textContent.includes("Name")
-                )?.textContent.split('|').reduce((acc, info) => {
-                    const [key, value] = info.split(':').map(str => str.trim());
-                    if (key && value) {
-                        acc[key.toLowerCase()] = value;
-                    }
-                    return acc;
-                }, {});
 
-                // Extract transaction details from the Closed Transactions table
-                const transactions = Array.from(doc.querySelectorAll('table')).flatMap((table) => {
-                    if (table.previousElementSibling?.textContent.includes('Closed Transactions')) {
-                        const rows = Array.from(table.querySelectorAll('tr')).slice(1); // Skip header row
-                        return rows.map((row) => {
-                            const cells = row.querySelectorAll('td');
-                            return {
-                                ticket: cells[0]?.textContent.trim() || '',
-                                openTime: cells[1]?.textContent.trim() || '',
-                                type: cells[2]?.textContent.trim() || '',
-                                size: cells[3]?.textContent.trim() || '',
-                                item: cells[4]?.textContent.trim() || '',
-                                price: cells[5]?.textContent.trim() || '',
-                                sl: cells[6]?.textContent.trim() || '',
-                                tp: cells[7]?.textContent.trim() || '',
-                                closeTime: cells[8]?.textContent.trim() || '',
-                                closePrice: cells[9]?.textContent.trim() || '',
-                                commission: cells[10]?.textContent.trim() || '',
-                                taxes: cells[11]?.textContent.trim() || '',
-                                swap: cells[12]?.textContent.trim() || '',
-                                profit: cells[13]?.textContent.trim() || '',
-                            };
-                        });
-                    }
-                    return [];
-                });
+                // Example 1: Get all text within a specific element (e.g., <body>)
+                const bodyText = doc.body.innerText;
+                console.log("bodyText:", bodyText);
 
-                const normalizeKey = (key) => key.replace(/[^\w]+/g, '_').toLowerCase();
+                // const bodyText = doc.body.innerText;
 
-                // Extract summary information
-                const summary = Array.from(doc.querySelectorAll('h2')).find(h2 =>
-                    h2.textContent.includes('Summary')
-                )?.nextElementSibling.textContent.split('\n').reduce((acc, line) => {
-                    const [key, value] = line.split(':').map(str => str.trim());
-                    console.log(acc)
-                    console.log(key, value)
-                    if (key && value) {
-                        acc[normalizeKey(key)] = value;
-                    }
-                    return acc;
-                }, {});
+                // Use a regular expression to match the account number
+                // Regular expressions to extract each field
+                const accountMatch = bodyText.match(/Account:\s*(\d+)/);
+                const nameMatch = bodyText.match(/Name:\s*([^\n]+)/);
+                const closedPLMatch = bodyText.match(/Closed P\/L:\s*([-\d.]+)/);
+                const depositWithdrawalMatch = bodyText.match(/Deposit\/Withdrawal:\s*([\d\s.,]+)/);
+                const grossLossMatch = bodyText.match(/Gross Loss:\s*([-\d.]+)/);
+                const totalNetProfitMatch = bodyText.match(/Total Net Profit:\s*([-\d.]+)/);
+                const totalProfitPercentageMatch = bodyText.match(/Relative Drawdown:\s*([-\d.]+)/);
+                const balanceMatch = bodyText.match(/Balance:\s*([\d\s.,.]+)/);
 
-                // Log the results
-                console.log("User Details:", userDetails);
-                console.log("Transactions:", transactions);
-                console.log("Summary:", summary);
+                // Extract values or set default if not found
+                const accountNumber = accountMatch ? accountMatch[1] : 'Account number not found';
+                const name = nameMatch ? nameMatch[1].trim() : 'Name not found';
+                const closedPL = closedPLMatch ? closedPLMatch[1].trim() : 'Closed P/L not found';
+                const depositWithdrawal = depositWithdrawalMatch ? depositWithdrawalMatch[1] : 'Deposit/Withdrawal not found';
+                const grossLoss = grossLossMatch ? grossLossMatch[1].trim() : 'Gross Loss not found';
+                const totalNetProfit = totalNetProfitMatch ? totalNetProfitMatch[1].trim() : 'Total Net Profit not found';
+                const totalProfitPercentage = totalProfitPercentageMatch ? totalProfitPercentageMatch[1].trim() : 'Total Net Profit not found';
+                const balance = balanceMatch ? balanceMatch[1].trim() : "Not balance found"
 
-                // console.log("data", userDetails)
-                // Upload the parsed HTML data to Firestore
-                // const promises = dataRows.map(async (row) => {
-                // return 
-                addDoc(collection(db, 'statements'), {
-                    id,
-                    user: userDetails, transactions, summary
-                });
-                // });
-                // await Promise.all(promises);
-                setTimeout(() => {
-                    setLoading(false)
-                    alert('HTML data uploaded successfully!');
-                    setUploadMessage('HTML data uploaded successfully!');
-                }, 1500);
+
+                console.log(totalProfitPercentage)
+                console.log("balance:", balanceMatch);
+                console.log("balance:", balance);
+                console.log("Name:", name);
+                console.log("Closed P/L:", closedPL);
+                // console.log("depositWithdrawalMatch:", depositWithdrawalMatch);
+                console.log("Deposit/Withdrawal:", depositWithdrawal);
+                console.log("Gross Loss:", grossLoss);
+                console.log("Total Net Profit:", totalNetProfit);
+
+                const statementRef = collection(db, "statements")
+                const q = query(statementRef, where("id", "==", id))
+                const snapShot = await getDocs(q)
+                if (!snapShot.empty) {
+                    // If document exists, update it
+                    const docRef = snapShot.docs[0].ref;
+                    console.log(docRef)
+                    await updateDoc(docRef, {
+                        name,
+                        closedPL,
+                        depositWithdrawal,
+                        grossLoss,
+                        totalNetProfit,
+                        totalProfitPercentage,
+                        balance,
+                    });
+                    alert('Document updated successfully');
+                    console.log('Document updated successfully');
+                } else {
+
+                    // Save parsed text data to Firestore (example)
+                    await addDoc(collection(db, 'statements'), {
+                        id,
+                        accountNumber,
+                        name,
+                        closedPL,
+                        depositWithdrawal,
+                        grossLoss,
+                        totalNetProfit,
+                        totalProfitPercentage,
+                        balance
+                        // fullText: bodyText
+                    });
+
+                    // Show success message
+                    setTimeout(() => {
+                        setLoading(false);
+                        alert('HTML data uploaded successfully!');
+                        setUploadMessage('HTML data uploaded successfully!');
+                    }, 1500);
+                }
             } catch (error) {
                 console.error('Error uploading HTML data:', error);
                 alert('Error uploading HTML data. Please try again.');
@@ -173,6 +180,7 @@ function UploadStatement() {
         reader.readAsText(file); // Read the HTML file content
     };
 
+
     if (!user) {
         return <div>Loading user data...</div>;
     }
@@ -182,7 +190,7 @@ function UploadStatement() {
             <h1>Upload Statement for {user.email}</h1> {/* Display user email */}
             <input
                 type="file"
-                accept=".csv, .html"
+                accept=".csv, .html, .htm"
                 onChange={handleFileChange}
             />
             <LoadingButton size="large" loading={loading} type="submit" variant="contained" onClick={handleUpload}>Upload Statement</LoadingButton>

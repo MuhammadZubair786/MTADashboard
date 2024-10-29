@@ -16,6 +16,12 @@ const navConfig = [
     path: '/dashboard/user',
     icon: icon('user-circle-svgrepo-com'),
   },
+  {
+    title: 'All Payout',
+    path: '/dashboard/all-payouts',
+    icon: icon('collection-email-svgrepo-com'),
+  },
+
   // {
   //   title: 'Products',
   //   path: '/dashboard/product',

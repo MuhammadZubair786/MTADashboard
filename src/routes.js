@@ -21,6 +21,8 @@ import Nutrition from './pages/Nutrition';
 import Routine from './pages/Routine';
 import Orders from './pages/OrdersPage';
 import UploadStatement from './pages/UploadStatement';
+import Payout from './pages/Payout';
+import Allpayout from './pages/Allpayout';
 
 export default function Router() {
   const navigate = useNavigate();
@@ -43,6 +45,8 @@ export default function Router() {
         { path: 'app', element: <DashboardAppPage /> },
         { path: 'user', element: <UserPage /> },
         { path: 'user/:id', element: <UploadStatement /> },
+        { path: 'payout/:id', element: <Payout /> },
+        { path: 'all-payouts', element: <Allpayout /> },
         // { path: 'product', element: <PostPage /> },
         // { path: 'content', element: <ContentPage /> },
         // { path: 'subscription', element: <PostPage /> },

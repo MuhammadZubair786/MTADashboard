@@ -54,8 +54,6 @@ const TABLE_HEAD = [
   { id: 'password', label: 'Password', alignRight: false },
   { id: 'challengeName', label: 'Challange', alignRight: false },
   { id: 'tradingAccountNumber', label: 'Trading Account Number', alignRight: false },
-
-
   { id: 'tradingServer', label: 'Trading Server', alignRight: false },
   { id: 'tradingAccountNumber', label: 'Trading Account Password', alignRight: false },
   { id: 'isLogin', label: 'Logged In ', alignRight: false },
@@ -543,10 +541,13 @@ export default function UserPage() {
           },
         }}
       >
+        <Button sx={{ color: 'info.main' }} onClick={() => navigate(`/dashboard/payout/${id}`)} >
+          Payout
+        </Button>
         <Button sx={{ color: 'info.main' }} onClick={() => navigate(`/dashboard/user/${id}`)} >
           Upload Statement
-          {/* <Iconify icon={'eva:detail-2-outline'} /> {isDeleteLoading ? 'Loading' : ' Delete'} */}
         </Button>
+
         <Button sx={{ color: 'error.main' }} onClick={handledeleteUser} disabled={isDeleteLoading}>
           <Iconify icon={'eva:trash-2-outline'} /> {isDeleteLoading ? 'Loading' : ' Delete'}
         </Button>
