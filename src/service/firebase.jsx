@@ -1,19 +1,20 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAJJk9eAj1YKBoVGHThXt3_9EH2P-UoY68",
-  authDomain: "freedom-elite.firebaseapp.com",
-  projectId: "freedom-elite",
-  storageBucket: "freedom-elite.appspot.com",
-  messagingSenderId: "353192285363",
-  appId: "1:353192285363:web:f893781a5749884ec9ccc6"
+  apiKey: 'AIzaSyAleN2PwkrDRsRv2MY8aiaWBUHYQkNVKvY',
+  authDomain: 'freedom-elite-dashboard.firebaseapp.com',
+  projectId: 'freedom-elite-dashboard',
+  storageBucket: 'freedom-elite-dashboard.firebasestorage.app',
+  messagingSenderId: '811486276459',
+  appId: '1:811486276459:web:a52e66ac5661d96c25fa2e',
+  measurementId: 'G-HVSDCVQLDX',
 };
 
 // Initialize Firebase
